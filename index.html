@@ -91,6 +91,23 @@ h1{font-size:20px;font-weight:700;text-align:center;margin-bottom:6px}
     </div>
   </div>
 
+
+  <div class="card">
+    <div class="card-title">개인정보 수집 및 이용 동의</div>
+    <div style="font-size:12px;color:#555;line-height:1.8;margin-bottom:12px;background:#f8f8f6;border-radius:8px;padding:12px;border:1px solid #e0e0da">
+      <b>수집 항목</b> : 보호자 연락처, 환불 계좌번호, 자녀 주민등록번호<br>
+      <b>수집 목적</b> : 캠프 참가 신청 확인, 보험 가입, 참가비 환불 처리<br>
+      <b>보유 기간</b> : 캠프 종료 후 즉시 파기<br><br>
+      위 개인정보 수집 및 이용에 동의하지 않으실 경우 신청이 불가합니다.
+    </div>
+    <div class="field" style="margin-bottom:0">
+      <div class="rg" id="privacy-group">
+        <div class="rb" data-v="동의" onclick="pick('privacy-group',this)">&#9989; 동의합니다</div>
+        <div class="rb" data-v="미동의" onclick="pick('privacy-group',this)">&#10060; 동의하지 않습니다</div>
+      </div>
+    </div>
+  </div>
+
   <button class="btn" id="sbtn" onclick="doSend()">
     <span id="slbl">신청서 제출</span>
   </button>
@@ -155,6 +172,8 @@ function doSend() {
   if (!gphone){alert('보호자 연락처를 입력해주세요.');return;}
   if (!gbank){alert('환불 계좌 은행명을 입력해주세요.');return;}
   if (!gaccount){alert('환불 계좌번호를 입력해주세요.');return;}
+  var privacy=gpick('privacy-group');
+  if (!privacy||privacy==='미동의'){alert('개인정보 수집 및 이용에 동의해주세요.');return;}
   if (!cn){alert('신청 자녀 수를 선택해주세요.');return;}
   var kids=[];
   for (var i=1;i<=cn;i++){
