@@ -17,6 +17,7 @@ h1{font-size:20px;font-weight:700;text-align:center;margin-bottom:6px}
 .field label{display:block;font-size:13px;color:#555;margin-bottom:5px;font-weight:500}
 .field input,.field select{display:block;width:100%;height:40px;padding:0 12px;border:1px solid #d0d0cc;border-radius:8px;background:#fafafa;color:#1a1a1a;font-size:14px;font-family:inherit}
 .field input:focus,.field select:focus{outline:none;border-color:#4f7ef8;background:#fff}
+.field-row2{display:grid;grid-template-columns:1fr 1.6fr;gap:10px}
 .rg{display:flex;gap:8px}
 .rb{flex:1;height:40px;display:flex;align-items:center;justify-content:center;border:1px solid #d0d0cc;border-radius:8px;cursor:pointer;font-size:13px;color:#555;background:#fafafa;user-select:none;transition:all 0.15s}
 .rb.on{border-color:#4f7ef8;background:#eef2ff;color:#3b5fe0;font-weight:700}
@@ -30,6 +31,7 @@ h1{font-size:20px;font-weight:700;text-align:center;margin-bottom:6px}
 .cf label{display:block;font-size:12px;color:#777;margin-bottom:4px}
 .cf input{display:block;width:100%;height:38px;padding:0 10px;border:1px solid #d0d0cc;border-radius:7px;background:#fff;color:#1a1a1a;font-size:13px;font-family:inherit}
 .cf input:focus{outline:none;border-color:#4f7ef8}
+.cf .rg .rb{height:36px;font-size:12px}
 .fee{background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:12px}
 .fee-lbl{font-size:13px;color:#3b5fe0;font-weight:500}
 .fee-amt{font-size:19px;font-weight:700;color:#3b5fe0}
@@ -63,11 +65,12 @@ h1{font-size:20px;font-weight:700;text-align:center;margin-bottom:6px}
       <input type="tel" id="gphone" placeholder="010-0000-0000">
     </div>
     <div class="field" style="margin-bottom:0">
-      <label>주일학교 등록 여부 <span class="req">*</span></label>
-      <div class="rg" id="sg">
-        <div class="rb" data-v="등록" onclick="pick('sg',this)">등록</div>
-        <div class="rb" data-v="미등록" onclick="pick('sg',this)">미등록</div>
+      <label>환불 계좌 <span class="req">*</span></label>
+      <div class="field-row2" style="margin-bottom:0">
+        <input type="text" id="gbank" placeholder="은행명 (예: 카카오뱅크)">
+        <input type="text" id="gaccount" placeholder="계좌번호">
       </div>
+      <div class="hint">미선정 시 환불을 위한 계좌입니다</div>
     </div>
   </div>
 
@@ -122,6 +125,10 @@ function pickN(n) {
     html += '<div><label>이름 <span class="req">*</span></label><input type="text" id="cnm'+i+'" placeholder="홍민준"></div>';
     html += '<div><label>세례명</label><input type="text" id="cbt'+i+'" placeholder="요한"></div>';
     html += '</div>';
+    html += '<div class="cf"><label>주일학교 등록 여부 <span class="req">*</span></label><div class="rg" id="sg'+i+'">';
+    html += '<div class="rb" data-v="등록" onclick="pick(\'sg'+i+'\',this)">등록</div>';
+    html += '<div class="rb" data-v="2학기등록예정" onclick="pick(\'sg'+i+'\',this)">2학기 등록 예정</div>';
+    html += '</div></div>';
     html += '<div class="cf"><label>주민등록번호 <span class="req">*</span></label><input type="text" id="crn'+i+'" placeholder="000000-0000000" maxlength="14" oninput="fmtR(this)"><div class="hint">보험 가입 목적으로만 사용됩니다</div></div>';
     html += '<div class="cf" style="margin-bottom:0"><label>알러지 식품</label><input type="text" id="cal'+i+'" placeholder="예) 견과류, 새우, 우유 (없으면 비워두세요)"><div class="hint">알러지가 있는 식품을 모두 입력해 주세요</div></div>';
     html += '</div>';
@@ -142,10 +149,12 @@ function gpick(gid){var a=document.querySelector('#'+gid+' .rb.on');return a?a.d
 
 function doSend() {
   if (busy) return;
-  var gname=gv('gname'), gphone=gv('gphone'), sunday=gpick('sg');
+  var gname=gv('gname'), gphone=gv('gphone');
+  var gbank=gv('gbank'), gaccount=gv('gaccount');
   if (!gname){alert('보호자 이름을 입력해주세요.');return;}
   if (!gphone){alert('보호자 연락처를 입력해주세요.');return;}
-  if (!sunday){alert('주일학교 등록 여부를 선택해주세요.');return;}
+  if (!gbank){alert('환불 계좌 은행명을 입력해주세요.');return;}
+  if (!gaccount){alert('환불 계좌번호를 입력해주세요.');return;}
   if (!cn){alert('신청 자녀 수를 선택해주세요.');return;}
   var kids=[];
   for (var i=1;i<=cn;i++){
@@ -153,15 +162,17 @@ function doSend() {
     var gr=document.getElementById('cgr'+i).value;
     var nm=gv('cnm'+i);
     var bt=gv('cbt'+i);
+    var sunday=gpick('sg'+i);
     var rn=gv('crn'+i);
     var al=gv('cal'+i);
     if (!sx){alert(i+'번째 자녀 성별을 선택해주세요.');return;}
     if (!gr){alert(i+'번째 자녀 학년을 선택해주세요.');return;}
     if (!nm){alert(i+'번째 자녀 이름을 입력해주세요.');return;}
+    if (!sunday){alert(i+'번째 자녀 주일학교 등록 여부를 선택해주세요.');return;}
     if (!rn||rn.length<14){alert(i+'번째 자녀 주민등록번호를 올바르게 입력해주세요.');return;}
-    kids.push({gender:sx,grade:gr,name:nm,baptism:bt||'--',rrn:rn,allergy:al||'없음'});
+    kids.push({gender:sx,grade:gr,name:nm,baptism:bt||'--',sunday:sunday,rrn:rn,allergy:al||'없음'});
   }
-  var data={timestamp:new Date().toLocaleString('ko-KR'),guardianName:gname,guardianPhone:gphone,sunday:sunday,childCount:cn,fee:FEE[cn]*cn,children:kids};
+  var data={timestamp:new Date().toLocaleString('ko-KR'),guardianName:gname,guardianPhone:gphone,refundBank:gbank,refundAccount:gaccount,childCount:cn,fee:FEE[cn]*cn,children:kids};
   busy=true;
   document.getElementById('sbtn').disabled=true;
   document.getElementById('slbl').innerHTML='<span class="spin"></span> 제출 중...';
